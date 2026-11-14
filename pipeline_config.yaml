@@ -1,0 +1,39 @@
+# Configuración compartida entre los notebooks del proyecto Predict Future Sales.
+# Las decisiones de limpieza se tomaron en el EDA (notebook 01) y se reutilizarán en las fases siguientes.
+
+# Ubicación y nombres de los archivos de datos (la carpeta se puede cambiar con la variable de entorno DATA_DIR)
+data:
+  raw_dir: data/raw
+  files:
+    sales: sales_train.csv
+    items: items.csv
+    categories: item_categories.csv
+    shops: shops.csv
+    test: test.csv
+
+# Decisiones de limpieza tomadas en el EDA (sección 4 del enunciado)
+cleaning:
+  # Tiendas duplicadas (mismo nombre o casi igual, sin meses de venta en común): ID antiguo -> ID vigente
+  shop_id_map:
+    0: 57
+    1: 58
+    11: 10
+  # Outliers extremos que se eliminan: filas con precio o cantidad diaria por encima de estos umbrales
+  max_item_price: 100000
+  max_item_cnt_day: 1000
+  # Precios <= 0: se imputan con la mediana del precio del mismo producto en la misma tienda
+  impute_nonpositive_price: median_shop_item
+  # Cantidades negativas (devoluciones): se conservan porque restan en la suma mensual del target
+  keep_returns: true
+  # Duplicados exactos: se conservan (no hay evidencia de que sean errores de registro)
+  drop_exact_duplicates: false
+
+# Parámetros del análisis exploratorio
+eda:
+  top_n_products: 20          # productos en la gráfica de barras top N
+  acf_top_k: 3                # series representativas por nivel (tienda, producto, par)
+  acf_exclude_items: [20949]  # bolsa de plástico de la marca: es empaque, no producto
+  acf_exclude_categories: [9, 79]  # servicios, no productos: 9 = entrega de mercancía, 79 = servicios internos
+  acf_pair_exclude_shops: [9, 12, 20, 55]  # tiendas no físicas (pares): venta itinerante, online, liquidación, almacén digital
+  acf_monthly_lags: 16        # rezagos en series mensuales (34 obs.; la PACF exige nlags < n/2)
+  acf_daily_lags: 60          # rezagos en la serie diaria total
